@@ -45,16 +45,17 @@ if __name__ == "__main__":
 
     # (2) 학습된 파일 경로 설정 (.pt 또는 .pth)
     trained_path = "epoch60+datasetplus.pt"
-    trained_path2 = "160epochmidnew.pt"
-    trained_path3 = "dehazer.pth"
-
+    #trained_path2 = "160epochmidnew.pt"
+    #trained_path3 = "dehazer.pth"
+    sample_rain_img = "./rain_storm-283.jpg"
+    output_path = "./processed_image.jpg"
     # 모델 로드 (이 부분은 그대로 유지)
     model = load_trained_model(trained_path, device)
     #model2 = load_derainhazedrop_model(trained_path2, device)
     #model3 = load_net_model(trained_path3, device)
 
     # (3) 추론할 이미지 경로 지정
-    sample_rain_img = "./rain_storm-283.jpg"
+    
     print(f"[Inference] 처리할 이미지: {sample_rain_img}")
 
     # (4) 이미지 열기 및 전처리 (이 부분은 그대로 유지)
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     # --- 결과 이미지 저장 (선택 사항) ---
     output_img_uint8 = (output_img_f * 255).astype(np.uint8)
     output_img_bgr = cv2.cvtColor(output_img_uint8, cv2.COLOR_RGB2BGR)
-    output_path = "./processed_image.jpg"
+    
     cv2.imwrite(output_path, output_img_bgr)
     print(f"처리된 이미지 저장 완료: {output_path}")
 

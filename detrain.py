@@ -23,16 +23,17 @@ import prepros
 # 3) 학습 예시: DataLoader + 학습 루프 (Windows 멀티프로세싱 안전 진입점)
 # ================================================
 if __name__ == "__main__":
-    print("===== 학습 스크립트 시작 =====")
-
     # 1) 사용자 설정: 경로 및 해상도
     root_gt_folder = "C:/Users/iliad/Downloads/RainDS/RainDS/RainDS_syn/train/gt"
     root_rain_folder = "C:/Users/iliad/Downloads/RainDS/RainDS/RainDS_syn/train/rainstreak_raindrop"
+    val_gt_folder   = "C:/Users/iliad/Downloads/RainDS/RainDS/RainDS_syn/test/gt"
+    val_rain_folder = "C:/Users/iliad/Downloads/RainDS/RainDS/RainDS_syn/test/rainstreak_raindrop"
     img_h, img_w = 500,500
     batch_size       = 8
     val_batch_size   = 4
     num_epochs       = 50
     lr               = 1e-3
+    print("===== 학습 스크립트 시작 =====")
     print(f"[Config] GT 폴더: {root_gt_folder}")
     print(f"[Config] Rain 폴더: {root_rain_folder}")
     print(f"[Config] 이미지 크기: ({img_h}, {img_w})\n")
@@ -54,8 +55,7 @@ if __name__ == "__main__":
         pin_memory=True
     )
     print(f"[Main] 데이터로더 크기: {len(loader)} 배치\n")
-    val_gt_folder   = "C:/Users/iliad/Downloads/RainDS/RainDS/RainDS_syn/test/gt"
-    val_rain_folder = "C:/Users/iliad/Downloads/RainDS/RainDS/RainDS_syn/test/rainstreak_raindrop"
+    
     val_dataset = prepros.RainDSSynDataset(
         root_gt=val_gt_folder,
         root_rain=val_rain_folder,

@@ -26,8 +26,6 @@ class RainDSSynDataset(Dataset):
         self.root_gt = root_gt
         self.root_rain = root_rain
         self.img_size = img_size
-
-        # 제공해주신 "되던 코드"의 GT 패턴 목록
         gt_patterns = [
             "pie-norain-*.png",
             "norain-*.png",
