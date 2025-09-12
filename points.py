@@ -6,6 +6,36 @@ from skimage.metrics import peak_signal_noise_ratio as calculate_psnr
 from skimage.metrics import structural_similarity as calculate_ssim
 import derainhaze
 
+def load_trained_model(path, device):
+    """
+    - 파일 확장자가 '.pt'이면 torch.jit.load()를 시도
+    - 그렇지 않으면 torch.load()로 state_dict를 불러와 직접 로드
+    """
+    extension = os.path.splitext(path)[1].lower()
+    if extension == ".pt":
+        print(f"[Load] TorchScript 아카이브 '{path}' 로드 중...")
+        model = torch.jit.load(path, map_location=device)
+        model.to(device)
+        model.eval()
+        print("[Load] TorchScript 모델 로드 완료 (eval 모드).\n")
+        return model
+
+    else:
+        print(f"[Load] state_dict 아카이브 '{path}' 로드 중...")
+        model = derainhaze.DerainNet().to(device)
+        checkpoint = torch.load(path, map_location=device)
+
+        # checkpoint가 딕셔너리라면, 내부에 'model_state_dict' 키가 있는지 확인
+        if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+            state_dict = checkpoint["model_state_dict"]
+        else:
+            state_dict = checkpoint
+
+        model.load_state_dict(state_dict)
+        model.eval()
+        print("[Load] state_dict 모델 로드 완료 (eval 모드).\n")
+        return model
+
 if __name__ == "__main__":
     print("===== 추론 스크립트 시작 =====")
 
@@ -20,8 +50,8 @@ if __name__ == "__main__":
 
     # 모델 로드 (이 부분은 그대로 유지)
     model = load_trained_model(trained_path, device)
-    model2 = load_derainhazedrop_model(trained_path2, device)
-    model3 = load_net_model(trained_path3, device)
+    #model2 = load_derainhazedrop_model(trained_path2, device)
+    #model3 = load_net_model(trained_path3, device)
 
     # (3) 추론할 이미지 경로 지정
     sample_rain_img = "./rain_storm-283.jpg"
