@@ -4,15 +4,8 @@ import numpy as np
 import os
 from skimage.metrics import peak_signal_noise_ratio as calculate_psnr
 from skimage.metrics import structural_similarity as calculate_ssim
+import derainhaze
 
-# (모델 로드 함수들은 그대로 유지)
-# def load_trained_model(...): ...
-# def load_derainhazedrop_model(...): ...
-# def load_net_model(...): ...
-
-# ================================================
-# 3) 단일 이미지 추론 예시
-# ================================================
 if __name__ == "__main__":
     print("===== 추론 스크립트 시작 =====")
 
@@ -46,13 +39,10 @@ if __name__ == "__main__":
     img_f = img_resized.astype(np.float32) / 255.0
 
     # --- 여기에 모델 추론 코드를 추가해야 합니다 ---
-    # 예시: model(입력 텐서) -> 출력 텐서
-    # 입력 텐서 준비: img_f를 텐서 형태로 변환하고 차원 추가
     input_tensor = torch.from_numpy(img_f).permute(2, 0, 1).unsqueeze(0).to(device)
 
     # 모델 추론 실행 (어떤 모델을 사용할지는 목적에 따라 선택)
-    # 여기서는 예시로 model1을 사용합니다.
-    with torch.no_grad(): # 추론 시에는 그래디언트 계산 비활성화
+    with torch.no_grad():
         output_tensor = model(input_tensor)
 
     # 출력 텐서를 이미지 형태로 변환 (0~1 범위로 클리핑 후 numpy 배열로 변환)
@@ -60,10 +50,6 @@ if __name__ == "__main__":
     output_img_f = np.clip(output_img_f, 0.0, 1.0) # 값을 0~1 범위로 클리핑
 
     # --- SSIM 및 PSNR 계산 코드 추가 ---
-    # 원본 이미지 (전처리 후, 0~1 범위)와 처리된 이미지 (0~1 범위)를 비교
-    # SSIM은 그레이스케일 이미지에 대해 계산하는 것이 일반적입니다.
-    # 컬러 이미지의 경우 채널별로 계산하거나 그레이스케일로 변환 후 계산할 수 있습니다.
-    # 여기서는 컬러 이미지에 대해 계산하는 예시를 보여드립니다.
 
     # 원본 이미지 (0~1 범위 float32)
     original_img_for_metrics = img_f
@@ -72,18 +58,14 @@ if __name__ == "__main__":
     processed_img_for_metrics = output_img_f
 
     # PSNR 계산
-    # data_range는 이미지 픽셀 값의 최대 범위입니다. 0~1 범위이므로 1.0으로 설정합니다.
     psnr_value = calculate_psnr(original_img_for_metrics, processed_img_for_metrics, data_range=1.0)
     print(f"계산된 PSNR: {psnr_value:.4f}")
 
     # SSIM 계산
-    # data_range는 이미지 픽셀 값의 최대 범위입니다. 0~1 범위이므로 1.0으로 설정합니다.
-    # channel_axis=2는 컬러 이미지의 채널 차원이 마지막에 있음을 나타냅니다.
     ssim_value = calculate_ssim(original_img_for_metrics, processed_img_for_metrics, data_range=1.0, channel_axis=2)
     print(f"계산된 SSIM: {ssim_value:.4f}")
 
     # --- 결과 이미지 저장 (선택 사항) ---
-    # 처리된 이미지를 0~255 범위의 uint8로 변환하여 저장
     output_img_uint8 = (output_img_f * 255).astype(np.uint8)
     output_img_bgr = cv2.cvtColor(output_img_uint8, cv2.COLOR_RGB2BGR)
     output_path = "./processed_image.jpg"
