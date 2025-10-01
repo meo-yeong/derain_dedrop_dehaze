@@ -1,42 +1,52 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
-class DenoiseBlock(nn.Module): 
-    def __init__(self, channels): 
-        super(DenoiseBlock, self).__init__() 
-        self.conv1 = nn.Conv2d(channels, channels, 3, 1, 1) 
-        self.relu = nn.ReLU(inplace=True) 
-        self.conv2 = nn.Conv2d(channels, channels, 3, 1, 1) 
-    def forward(self, x): 
-        noise = self.conv2(self.relu(self.conv1(x))) 
-        return x - noise # 입력에서 추정된 noise 제거
-    
-class Enhance_Net(nn.Module):
-    def __init__(self, in_channels = 3, mid_channels = 64):
-        super(Enhance_Net, self).__init__()
+class UNetEnhance(nn.Module):
+    def __init__(self, in_channels=6, base_channels=64):  # R_low + I_low_3 => 6채널
+        super().__init__()
+        # --- Encoder ---
+        self.enc1 = nn.Conv2d(in_channels, base_channels, 3, 1, 1)        # 6 -> 64
+        self.enc2 = nn.Conv2d(base_channels, base_channels*2, 3, 1, 1)    # 64 -> 128
+        self.enc3 = nn.Conv2d(base_channels*2, base_channels*4, 3, 1, 1)  # 128 -> 256
 
-        self.conv_r1 = nn.Conv2d(in_channels+3, mid_channels, kernel_size=3, stride=1, padding=1)
-        self.conv_r2 = nn.Conv2d(mid_channels, mid_channels, kernel_size=3, stride=1, padding=1)
-        self.conv_r3 = nn.Conv2d(mid_channels, in_channels, kernel_size=3, stride=1, padding=1)
-        self.denoise = DenoiseBlock(in_channels)
+        # --- Decoder ---
+        # concat 방식으로 skip connection -> 채널 수 = decoder_input_channels + skip_channels
+        self.dec3 = nn.Conv2d(base_channels*4 + base_channels*2, base_channels*2, 3, 1, 1)  # 256+128 -> 128
+        self.dec2 = nn.Conv2d(base_channels*2 + base_channels, base_channels, 3, 1, 1)      # 128+64 -> 64
+        self.dec1 = nn.Conv2d(base_channels, 3, 3, 1, 1)  # R_hat 출력
 
-        self.conv_i1 = nn.Conv2d(1, mid_channels, kernel_size=3, stride=1, padding=1)
-        self.conv_i2 = nn.Conv2d(mid_channels, mid_channels, kernel_size=3, stride=1, padding=1)
-        self.conv_i3 = nn.Conv2d(mid_channels, 1, kernel_size=3, stride=1, padding=1)
-        
         self.relu = nn.ReLU(inplace=True)
-        self.sigmoid = nn.Sigmoid()
+
+        # I 채널 처리용
+        self.i_conv1 = nn.Conv2d(1, 64, 3, 1, 1)
+        self.i_conv2 = nn.Conv2d(64, 64, 3, 1, 1)
+        self.i_conv3 = nn.Conv2d(64, 1, 3, 1, 1)
 
     def forward(self, R_low, I_low):
-       I_low_3 = torch.cat([I_low, I_low, I_low], dim=1)
+        # I 채널 3채널로 확장
+        I_low_3 = I_low.repeat(1, 3, 1, 1)
+        x = torch.cat([R_low, I_low_3], dim=1)
 
-       r = torch.cat([R_low, I_low_3], dim=1)
-       r = self.relu(self.conv_r1(r))
-       r = self.relu(self.conv_r2(r))
-       R_hat_low = self.conv_r3(r)
-       R_hat_low = self.denoise(R_hat_low)
+        # --- Encoder ---
+        e1 = self.relu(self.enc1(x))                          # B,64,H,W
+        e2 = self.relu(self.enc2(F.avg_pool2d(e1, 2)))       # B,128,H/2,W/2
+        e3 = self.relu(self.enc3(F.avg_pool2d(e2, 2)))       # B,256,H/4,W/4
 
-       i = self.relu(self.conv_i1(I_low))
-       i = self.relu(self.conv_i2(i))
-       I_hat_low = self.conv_i3(i)     
-       return R_hat_low, I_hat_low
+        # --- Decoder (concat skip connection) ---
+        d3 = F.interpolate(e3, scale_factor=2, mode='bilinear', align_corners=False)  # H/2,W/2
+        d3 = torch.cat([d3, e2], dim=1)                      # 채널 256+128=384
+        d3 = self.relu(self.dec3(d3))                        # 384->128
+
+        d2 = F.interpolate(d3, scale_factor=2, mode='bilinear', align_corners=False)  # H,W
+        d2 = torch.cat([d2, e1], dim=1)                      # 128+64=192
+        d2 = self.relu(self.dec2(d2))                        # 192->64
+
+        R_hat = self.dec1(d2)                                # 64->3
+
+        # --- I 채널 ---
+        i = self.relu(self.i_conv1(I_low))
+        i = self.relu(self.i_conv2(i))
+        I_hat = 0.5 * (torch.tanh(self.i_conv3(i)) + 1.0)
+
+        return R_hat, I_hat
