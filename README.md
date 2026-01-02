@@ -1,6 +1,9 @@
 # 프로젝트 내용
 악천후 상황에서의 이미지 복원을 위한 이미지 복원 모델입니다.
 
+TBAodNet 논문 (https://drive.google.com/file/d/1pVF57CLqDPmn45BTLLJoBnnh8yddqebv/view?usp=sharing)
+해당 논문은 한국 ITS 추계학술대회 학부생 논문 부분 대상을 수상하였습니다.
+
 ## 사용 시 주의사항 
 이 프로젝트를 실행할 때는 다음 사항들을 반드시 숙지해야 오류 없이 작동합니다.
 
@@ -121,6 +124,7 @@ pip install torch torchvision opencv-python scikit-image tqdm pillow
     </td>
   </tr>
 </table>
+
 
 
 
