@@ -4,6 +4,9 @@
 TBAodNet 논문 (https://drive.google.com/file/d/1pVF57CLqDPmn45BTLLJoBnnh8yddqebv/view?usp=sharing)
 해당 논문은 한국 ITS 추계학술대회 학부생 논문 부분 대상을 수상하였습니다.
 
+소켓 통신을 활용한 원격추론 구현 소스코드
+(https://github.com/d0gn/Autonomous-Driving)
+
 ## 사용 시 주의사항 
 이 프로젝트를 실행할 때는 다음 사항들을 반드시 숙지해야 오류 없이 작동합니다.
 
@@ -124,6 +127,7 @@ pip install torch torchvision opencv-python scikit-image tqdm pillow
     </td>
   </tr>
 </table>
+
 
 
 
