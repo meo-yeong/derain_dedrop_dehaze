@@ -1,4 +1,7 @@
-# 사용 시 주의사항 
+# 프로젝트 내용
+악천후 상황에서의 이미지 복원을 위한 이미지 복원 모델입니다.
+
+## 사용 시 주의사항 
 이 프로젝트를 실행할 때는 다음 사항들을 반드시 숙지해야 오류 없이 작동합니다.
 
 ## 실행 위치
@@ -118,6 +121,7 @@ pip install torch torchvision opencv-python scikit-image tqdm pillow
     </td>
   </tr>
 </table>
+
 
 
 
