@@ -11,6 +11,13 @@ python utils/points.py
 ## 실행 순서
 데이터셋이 준비되지 않은 상태에서 학습 스크립트를 실행하면 오류가 발생합니다. 아래 순서를 권장합니다.
 
+데이터셋 준비 : 모델 학습 및 검증을 위해 아래의 데이터셋에서 약 5,000장의 이미지(비, 안개, 물방울 등)를 선별하여 사용하였습니다.
+
+• 데이터셋1(https://sites.google.com/site/boyilics/website-builder/project-page) (RESIDE 관련 프로젝트 페이지)
+
+• 데이터셋2(https://github.com/guanqiyuan/WeatherBench) (WeatherBench GitHub 저장소)
+
+
 데이터 준비: utils/downloadYoloData.py 실행 혹은 사용자 데이터 준비 (data/ 폴더)
 
 전처리 (리사이즈): preprocessing/resize.py 실행
@@ -111,6 +118,7 @@ pip install torch torchvision opencv-python scikit-image tqdm pillow
     </td>
   </tr>
 </table>
+
 
 
 
